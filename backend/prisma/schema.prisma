@@ -22,7 +22,7 @@ model User {
   phoneNumber       String       @unique
   passwordHash      String
   role              RoleType     @default(CITIZEN)
-  isActive          boolean      @default(true)
+  isActive          Boolean      @default(true)
   isVerified        Boolean      @default(false)
   preferredLanguage String       @default("en") // "en" | "tpi"
   lastLoginAt       DateTime?
