@@ -1,0 +1,76 @@
+{
+  "app": {
+    "name": "BULOLO CONNECT",
+    "tagline": "One District. One Community. One Connected Future.",
+    "location": "Bulolo District, Morobe Province, Papua New Guinea",
+    "mpOffice": "Bulolo District Administration & Parliamentary Electorate Office"
+  },
+  "nav": {
+    "home": "Home",
+    "about": "About Bulolo",
+    "services": "District Services",
+    "assistance": "Request Assistance",
+    "report": "Report an Issue",
+    "community": "Our Communities",
+    "projects": "Development Projects",
+    "announcements": "Announcements",
+    "contact": "Contact",
+    "login": "Sign In",
+    "register": "Citizen Register",
+    "dashboard": "Citizen Dashboard",
+    "admin": "District Admin",
+    "mpDashboard": "MP's Office",
+    "logout": "Log Out"
+  },
+  "hero": {
+    "welcome": "Welcome to Bulolo Connect",
+    "subtitle": "Connecting our people to services, opportunities, transparent development and community support across Mumeng, Watut, Buang and Bulolo Urban.",
+    "exploreServices": "Explore District Services",
+    "submitRequest": "Submit a Request / Concern",
+    "trackRequest": "Track Existing Request"
+  },
+  "quickAccess": {
+    "title": "District Digital Gateway",
+    "applyAssistance": "Apply for Assistance",
+    "applyAssistanceDesc": "Access education, medical, family, agriculture and youth support programmes.",
+    "reportIssue": "Report Infrastructure & Issues",
+    "reportIssueDesc": "Notify the district of roads, water, power, or bridge maintenance needs.",
+    "findHealth": "Health & Aid Posts",
+    "findHealthDesc": "Locate verified health centres, maternity clinics, and emergency lines.",
+    "findEducation": "Schools & Training",
+    "findEducationDesc": "Information on primary, secondary, and vocational institutions in Bulolo.",
+    "developmentProjects": "Development Tracking",
+    "developmentProjectsDesc": "Track genuine public projects, verified budgets and construction milestones.",
+    "communityVoices": "Community Information",
+    "communityVoicesDesc": "Local level ward profiles, village initiatives and community leadership."
+  },
+  "status": {
+    "submitted": "Submitted",
+    "received": "Received",
+    "underReview": "Under Review",
+    "actionInProgress": "Action in Progress",
+    "resolved": "Resolved",
+    "closed": "Closed",
+    "approved": "Approved",
+    "declined": "Declined",
+    "verified": "Verified Record",
+    "pending": "Pending Verification"
+  },
+  "forms": {
+    "fullName": "Full Name",
+    "phone": "Mobile Phone Number",
+    "email": "Email Address (Optional)",
+    "password": "Password",
+    "llg": "Local Level Government (LLG)",
+    "ward": "Ward",
+    "village": "Village / Community",
+    "residentialLocation": "Current Residential Location",
+    "diasporaQuestion": "Do you live in Bulolo or are you Bulolo diaspora living elsewhere?",
+    "category": "Category",
+    "subject": "Subject / Title",
+    "description": "Detailed Description",
+    "submit": "Submit Application / Request",
+    "saveDraft": "Save Offline Draft",
+    "referenceCode": "Reference Code"
+  }
+}

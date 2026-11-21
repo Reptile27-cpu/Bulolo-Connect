@@ -1,0 +1,574 @@
+// BULOLO CONNECT - PostgreSQL Database Schema
+// District Digital Services, Community Engagement & Development Management Platform
+// Location: Bulolo District, Morobe Province, Papua New Guinea
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// -----------------------------------------------------------------------------
+// 1. IDENTITY, ROLES & ACCESS CONTROL
+// -----------------------------------------------------------------------------
+
+model User {
+  id                String       @id @default(uuid())
+  accountId         String       @unique // e.g. "BC-USR-2026-0001"
+  email             String?      @unique
+  phoneNumber       String       @unique
+  passwordHash      String
+  role              RoleType     @default(CITIZEN)
+  isActive          boolean      @default(true)
+  isVerified        Boolean      @default(false)
+  preferredLanguage String       @default("en") // "en" | "tpi"
+  lastLoginAt       DateTime?
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  citizenProfile    CitizenProfile?
+  staffProfile      StaffProfile?
+  notifications     Notification[]
+  auditLogs         AuditLog[]
+  feedbacks         Feedback[]
+  assignedRequests  RequestAssignment[]
+  decisionsMade     ApplicationDecision[]
+
+  @@index([phoneNumber])
+  @@index([email])
+  @@index([role])
+}
+
+enum RoleType {
+  SUPER_ADMIN
+  DISTRICT_ADMIN
+  MP_OFFICE_REP
+  OFFICE_STAFF
+  LLG_ADMIN
+  COMMUNITY_REP
+  CITIZEN
+  PUBLIC_VISITOR
+}
+
+model CitizenProfile {
+  id                  String       @id @default(uuid())
+  userId              String       @unique
+  user                User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName            String
+  province            String       @default("Morobe Province")
+  district            String       @default("Bulolo District")
+  llg                 String       // Mumeng Rural, Watut Rural, Buang Rural, Bulolo Urban
+  ward                String
+  village             String
+  residentialLocation String
+  isDiaspora          Boolean      @default(false) // Citizen originally from Bulolo living elsewhere
+  voterOrNidNumber    String?
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+
+  requests            CitizenRequest[]
+  assistanceApps      AssistanceApplication[]
+  household           Household?
+
+  @@index([llg])
+  @@index([ward])
+}
+
+model StaffProfile {
+  id              String       @id @default(uuid())
+  userId          String       @unique
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName        String
+  staffIdNumber   String       @unique
+  department      String
+  positionTitle   String
+  assignedLlgId   String?
+  assignedLlg     LLG?         @relation(fields: [assignedLlgId], references: [id])
+  officeLocation  String       @default("Bulolo District Administration")
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+}
+
+// -----------------------------------------------------------------------------
+// 2. GEOGRAPHIC HIERARCHY
+// -----------------------------------------------------------------------------
+
+model District {
+  id          String   @id @default(uuid())
+  name        String   @unique @default("Bulolo District")
+  province    String   @default("Morobe Province")
+  code        String   @unique @default("BULOLO")
+  capital     String   @default("Bulolo Town")
+  llgs        LLG[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model LLG {
+  id          String    @id @default(uuid())
+  districtId  String
+  district    District  @relation(fields: [districtId], references: [id])
+  name        String    // Mumeng Rural, Watut Rural, Buang Rural, Bulolo Urban
+  code        String    @unique
+  type        String    @default("RURAL") // "RURAL" | "URBAN"
+  headquarters String
+  description String?
+  wards       Ward[]
+  staff       StaffProfile[]
+  services    DistrictService[]
+  projects    DevelopmentProject[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Ward {
+  id          String    @id @default(uuid())
+  llgId       String
+  llg         LLG       @relation(fields: [llgId], references: [id], onDelete: Cascade)
+  wardNumber  String
+  name        String
+  description String?
+  villages    Village[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([llgId, wardNumber])
+}
+
+model Village {
+  id          String      @id @default(uuid())
+  wardId      String
+  ward        Ward        @relation(fields: [wardId], references: [id], onDelete: Cascade)
+  name        String
+  latitude    Float?
+  longitude   Float?
+  communities Community[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model Community {
+  id                  String   @id @default(uuid())
+  villageId           String?
+  village             Village? @relation(fields: [villageId], references: [id])
+  name                String
+  llg                 String
+  ward                String
+  description         String
+  publicFacilities    String   // JSON string of facilities
+  keyPriorities       String   // JSON string of priorities
+  economicActivities  String   // JSON string of activities
+  communityLeader     String?
+  leaderContact       String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+// -----------------------------------------------------------------------------
+// 3. PRIVATE FAMILY & HOUSEHOLD MODULE (STRICT PRIVACY)
+// -----------------------------------------------------------------------------
+
+model Household {
+  id                     String            @id @default(uuid())
+  referenceNumber        String            @unique // e.g. "HHD-2026-0012"
+  citizenProfileId       String            @unique
+  citizenProfile         CitizenProfile    @relation(fields: [citizenProfileId], references: [id], onDelete: Cascade)
+  headOfHouseholdName    String
+  headOfHouseholdNID     String?
+  llg                    String
+  ward                   String
+  village                String
+  residentialAddress     String
+  householdSize          Int               @default(1)
+  vulnerabilityStatus    String?           // JSON string of vulnerability markers
+  specialAssistanceNotes String?
+  members                HouseholdMember[]
+  createdAt              DateTime          @default(now())
+  updatedAt              DateTime          @updatedAt
+}
+
+model HouseholdMember {
+  id                 String    @id @default(uuid())
+  householdId        String
+  household          Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  fullName           String
+  relationshipToHead String    // Spouse, Child, Parent, Sibling, Other
+  gender             String    // MALE, FEMALE, OTHER
+  dateOfBirth        String?
+  isAttendingSchool  Boolean   @default(false)
+  schoolName         String?
+  hasSpecialNeeds    Boolean   @default(false)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+}
+
+// -----------------------------------------------------------------------------
+// 4. CITIZEN REQUESTS, COMPLAINTS & FEEDBACK
+// -----------------------------------------------------------------------------
+
+model CitizenRequest {
+  id                     String              @id @default(uuid())
+  referenceNumber        String              @unique // e.g. "REQ-2026-0001"
+  citizenProfileId       String?
+  citizenProfile         CitizenProfile?     @relation(fields: [citizenProfileId], references: [id])
+  isAnonymous            Boolean             @default(false)
+  contactName            String?
+  contactPhone           String?
+  contactEmail           String?
+  preferredContactMethod String              @default("PHONE")
+  category               String              // ROADS_AND_BRIDGES, WATER_SUPPLY, ELECTRICITY, EDUCATION, HEALTH, etc.
+  subject                String
+  description            String
+  province               String              @default("Morobe Province")
+  district               String              @default("Bulolo District")
+  llg                    String
+  ward                   String
+  village                String
+  specificLocation       String?
+  latitude               Float?
+  longitude              Float?
+  urgency                String              @default("NORMAL") // LOW, NORMAL, HIGH, EMERGENCY
+  status                 String              @default("SUBMITTED") // SUBMITTED, RECEIVED, UNDER_REVIEW, etc.
+  departmentReferredTo   String?
+  resolutionSummary      String?
+  resolvedAt             DateTime?
+  createdAt              DateTime            @default(now())
+  updatedAt              DateTime            @updatedAt
+
+  attachments            RequestAttachment[]
+  comments               RequestComment[]
+  assignments            RequestAssignment[]
+
+  @@index([referenceNumber])
+  @@index([status])
+  @@index([category])
+  @@index([llg])
+}
+
+model RequestAttachment {
+  id          String         @id @default(uuid())
+  requestId   String
+  request     CitizenRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  fileName    String
+  fileUrl     String
+  fileType    String
+  fileSize    Int
+  isPublic    Boolean        @default(false)
+  uploadedAt  DateTime       @default(now())
+}
+
+model RequestComment {
+  id             String         @id @default(uuid())
+  requestId      String
+  request        CitizenRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  authorId       String
+  authorName     String
+  authorRole     String
+  isInternalOnly Boolean        @default(false)
+  content        String
+  createdAt      DateTime       @default(now())
+}
+
+model RequestAssignment {
+  id              String         @id @default(uuid())
+  requestId       String
+  request         CitizenRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  officerUserId   String
+  officer         User           @relation(fields: [officerUserId], references: [id])
+  assignedBy      String
+  notes           String?
+  assignedAt      DateTime       @default(now())
+}
+
+// -----------------------------------------------------------------------------
+// 5. ASSISTANCE PROGRAMMES & APPLICATIONS
+// -----------------------------------------------------------------------------
+
+model AssistanceProgramme {
+  id                  String                  @id @default(uuid())
+  code                String                  @unique // e.g. "EDU-SCHOLAR-2026"
+  title               String
+  category            String                  // EDUCATIONAL_ASSISTANCE, MEDICAL_ASSISTANCE, etc.
+  description         String
+  eligibilityCriteria String                  // JSON string list
+  requiredDocuments   String                  // JSON string list
+  isOpen              Boolean                 @default(true)
+  openingDate         DateTime                @default(now())
+  closingDate         DateTime?
+  responsibleOffice   String
+  contactPerson       String
+  contactPhone        String
+  contactEmail        String
+  maximumGrantAmount  Float?
+  createdAt           DateTime                @default(now())
+  updatedAt           DateTime                @updatedAt
+
+  applications        AssistanceApplication[]
+}
+
+model AssistanceApplication {
+  id                  String                @id @default(uuid())
+  applicationNumber   String                @unique // e.g. "AST-2026-0001"
+  programmeId         String
+  programme           AssistanceProgramme   @relation(fields: [programmeId], references: [id])
+  citizenProfileId    String
+  citizenProfile      CitizenProfile        @relation(fields: [citizenProfileId], references: [id])
+  applicantName       String
+  applicantPhone      String
+  applicantEmail      String?
+  llg                 String
+  ward                String
+  village             String
+  householdReference  String?
+  requestedAmount     Float?
+  statementOfNeed     String
+  status              String                @default("SUBMITTED") // DRAFT, SUBMITTED, UNDER_REVIEW, APPROVED, DECLINED, COMPLETED
+  reviewedByStaffId   String?
+  reviewedByStaffName String?
+  reviewedAt          DateTime?
+  decisionReason      String?
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+
+  documents           ApplicationDocument[]
+  decisions           ApplicationDecision[]
+
+  @@index([applicationNumber])
+  @@index([status])
+  @@index([programmeId])
+}
+
+model ApplicationDocument {
+  id            String                @id @default(uuid())
+  applicationId String
+  application   AssistanceApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  title         String
+  documentType  String
+  fileUrl       String
+  fileSize      Int
+  uploadedAt    DateTime              @default(now())
+}
+
+model ApplicationDecision {
+  id                  String                @id @default(uuid())
+  applicationId       String
+  application         AssistanceApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  decisionOfficerId   String
+  decisionOfficer     User                  @relation(fields: [decisionOfficerId], references: [id])
+  decisionOfficerName String
+  status              String                // APPROVED, DECLINED, COMPLETED
+  amountApproved      Float?
+  explanation         String
+  decisionDate        DateTime              @default(now())
+}
+
+// -----------------------------------------------------------------------------
+// 6. DISTRICT SERVICES DIRECTORY
+// -----------------------------------------------------------------------------
+
+model ServiceCategory {
+  id          String           @id @default(uuid())
+  name        String           @unique
+  code        String           @unique
+  description String?
+  services    DistrictService[]
+  createdAt   DateTime         @default(now())
+}
+
+model DistrictService {
+  id                    String          @id @default(uuid())
+  name                  String
+  categoryId            String?
+  serviceCategory       ServiceCategory? @relation(fields: [categoryId], references: [id])
+  category              String          // HEALTHCARE, EDUCATION, GOVERNMENT_OFFICE, etc.
+  description           String
+  organisationName      String
+  physicalAddress       String
+  llgId                 String?
+  llgRelation           LLG?            @relation(fields: [llgId], references: [id])
+  llg                   String
+  ward                  String
+  phoneNumber           String
+  alternativePhone      String?
+  email                 String?
+  operatingHours        String
+  servicesOffered       String          // JSON string list
+  latitude              Float?
+  longitude             Float?
+  officialWebsite       String?
+  verificationStatus    String          @default("VERIFIED") // VERIFIED, PENDING_VERIFICATION, OUTDATED
+  verifiedAt            DateTime?
+  verifiedByOfficerName String?
+  informationSource     String
+  isEmergencyService    Boolean         @default(false)
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
+
+  @@index([category])
+  @@index([llg])
+  @@index([verificationStatus])
+}
+
+// -----------------------------------------------------------------------------
+// 7. DEVELOPMENT PROJECT TRACKING
+// -----------------------------------------------------------------------------
+
+model DevelopmentProject {
+  id                     String              @id @default(uuid())
+  projectCode            String              @unique // e.g. "BDP-2026-001"
+  title                  String
+  description            String
+  category               String              // ROADS_AND_BRIDGES, EDUCATION, HEALTHCARE, etc.
+  llgId                  String?
+  llgRelation            LLG?                @relation(fields: [llgId], references: [id])
+  llg                    String
+  ward                   String
+  specificLocation       String
+  latitude               Float?
+  longitude              Float?
+  implementingAgency     String
+  contractorName         String?
+  commencementDate       DateTime
+  expectedCompletionDate DateTime
+  actualCompletionDate   DateTime?
+  status                 String              @default("UNDER_CONSTRUCTION") // PROPOSED, UNDER_ASSESSMENT, APPROVED, UNDER_CONSTRUCTION, COMPLETED, etc.
+  progressPercentage     Int                 @default(0) // 0 to 100
+  publishedBudgetKina    Float?              // strictly verified
+  fundingSource          String?             // strictly verified
+  isFinanciallyVerified  Boolean             @default(false)
+  featuredImageUrl       String?
+  createdAt              DateTime            @default(now())
+  updatedAt              DateTime            @updatedAt
+
+  updates                ProjectUpdate[]
+  attachments            ProjectAttachment[]
+
+  @@index([projectCode])
+  @@index([status])
+  @@index([category])
+  @@index([llg])
+}
+
+model ProjectUpdate {
+  id                   String             @id @default(uuid())
+  projectId            String
+  project              DevelopmentProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  updateDate           DateTime           @default(now())
+  title                String
+  reportSummary        String
+  progressPercentage   Int
+  statusAtUpdate       String
+  inspectionOfficerName String
+  photoUrls            String?            // JSON string list of photo URLs
+  createdAt            DateTime           @default(now())
+}
+
+model ProjectAttachment {
+  id          String             @id @default(uuid())
+  projectId   String
+  project     DevelopmentProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title       String
+  fileUrl     String
+  fileType    String
+  fileSize    Int
+  uploadedAt  DateTime           @default(now())
+}
+
+// -----------------------------------------------------------------------------
+// 8. ANNOUNCEMENTS, NOTIFICATIONS & AUDIT
+// -----------------------------------------------------------------------------
+
+model Announcement {
+  id               String    @id @default(uuid())
+  title            String
+  category         String    // OFFICIAL_NOTICE, PUBLIC_MEETING, etc.
+  summary          String
+  content          String
+  publishDate      DateTime  @default(now())
+  expiryDate       DateTime?
+  targetLlg        String?
+  targetWard       String?
+  isUrgent         Boolean   @default(false)
+  isPublished      Boolean   @default(true)
+  authorStaffName  String
+  attachmentUrls   String?   // JSON string list
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([category])
+  @@index([isPublished])
+}
+
+model Notification {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  message     String
+  type        String   @default("SYSTEM") // REQUEST_UPDATE, ASSISTANCE_UPDATE, ANNOUNCEMENT, SYSTEM
+  referenceId String?
+  isRead      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@index([userId, isRead])
+}
+
+model Feedback {
+  id             String   @id @default(uuid())
+  userId         String?
+  user           User?    @relation(fields: [userId], references: [id])
+  submitterName  String?
+  submitterPhone String?
+  category       String
+  message        String
+  isReviewed     Boolean  @default(false)
+  createdAt      DateTime @default(now())
+}
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
+  action      String   // LOGIN, CREATE_REQUEST, UPDATE_STATUS, APPROVE_ASSISTANCE, etc.
+  entityType  String   // Request, AssistanceApplication, User, Project, etc.
+  entityId    String?
+  ipAddress   String?
+  userAgent   String?
+  details     String?  // JSON string of before/after state
+  createdAt   DateTime @default(now())
+
+  @@index([action])
+  @@index([entityType])
+  @@index([createdAt])
+}
+
+model Organisation {
+  id          String   @id @default(uuid())
+  name        String
+  type        String   // CHURCH, YOUTH_GROUP, WOMENS_GROUP, NGO, COOPERATIVE
+  llg         String
+  ward        String
+  contactName String
+  phone       String
+  email       String?
+  isVerified  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model CommunityEvent {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  location    String
+  llg         String
+  ward        String
+  eventDate   DateTime
+  organizer   String
+  isApproved  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

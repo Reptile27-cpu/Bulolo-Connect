@@ -1,0 +1,16 @@
+{
+  "short_name": "BuloloConnect",
+  "name": "BULOLO CONNECT — District Digital Services Platform",
+  "description": "District Digital Services, Community Engagement & Development Management Platform for Bulolo District, Morobe Province, Papua New Guinea",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#1b4332",
+  "background_color": "#f8faf9",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    }
+  ]
+}

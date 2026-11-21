@@ -1,0 +1,76 @@
+{
+  "app": {
+    "name": "BULOLO CONNECT",
+    "tagline": "Wanpela Distrik. Wanpela Komuniti. Wanpela Bung Wantaim Bihain.",
+    "location": "Bulolo Distrik, Morobe Provins, Papua Niugini",
+    "mpOffice": "Bulolo Distrik Administresen na MP Electorate Ofis"
+  },
+  "nav": {
+    "home": "Nambawan Pes",
+    "about": "Stori Bilong Bulolo",
+    "services": "Distrik Sevis",
+    "assistance": "Askim Halivim",
+    "report": "Ripotim Hevi",
+    "community": "Ol Komuniti Bilong Yumi",
+    "projects": "Projek Bilong Divelopmen",
+    "announcements": "Tok Save",
+    "contact": "Singautim Mipela",
+    "login": "Go Insait (Log In)",
+    "register": "Sutim Nem (Registesen)",
+    "dashboard": "Pes Bilong Sitisen",
+    "admin": "Distrik Admin Ofis",
+    "mpDashboard": "Ofis Bilong MP",
+    "logout": "Lusim (Log Out)"
+  },
+  "hero": {
+    "welcome": "Bung Gudpela Long Bulolo Connect",
+    "subtitle": "Konektim ol manmeri bilong yumi igo long sevis, opotuniti, divelopmen na gutpela halivim namel long Mumeng, Watut, Buang na Bulolo Taun.",
+    "exploreServices": "Lukim Ol Distrik Sevis",
+    "submitRequest": "Salim Askim / Hevi",
+    "trackRequest": "Painim Hevi Yu Bin Salim"
+  },
+  "quickAccess": {
+    "title": "Koneksen Bilong Distrik Sevis",
+    "applyAssistance": "Askim Long Halivim",
+    "applyAssistanceDesc": "Skul fi, marasin na hausik, femili, didiman na halivim bilong ol yut.",
+    "reportIssue": "Ripotim Rot o Wara Hevi",
+    "reportIssueDesc": "Toksave long rot, bris, pawa o wara igat bagarap long ples bilong yu.",
+    "findHealth": "Hausik na Eit Pos",
+    "findHealthDesc": "Painim ol kliniks, dokta, nes na telefon namba long taim bilong emejensi.",
+    "findEducation": "Ol Skul na Trening",
+    "findEducationDesc": "Tok klia long ol praimeri, sekondari na vokesenol skul insait long Bulolo.",
+    "developmentProjects": "Lukluk Long Ol Projek",
+    "developmentProjectsDesc": "Watsim stret ol bikpela wok ol i kirapim wantaim stretpela bajet na piksa.",
+    "communityVoices": "Komuniti Infomesen",
+    "communityVoicesDesc": "Infomesen bilong ol wod, viles na lidasip insait long LLG bilong yu."
+  },
+  "status": {
+    "submitted": "Salim Pinis",
+    "received": "Ofis Kisim Pinis",
+    "underReview": "Ol i Wok Long Sekim",
+    "actionInProgress": "Wok i Go Het Nau",
+    "resolved": "Stretim Pinis",
+    "closed": "Pasim Pinis",
+    "approved": "Tok Orait Pinis",
+    "declined": "No Inap Halivim",
+    "verified": "Trutru Infomesen",
+    "pending": "Wok Long Sekim Yet"
+  },
+  "forms": {
+    "fullName": "Nem Stret Bilong Yu",
+    "phone": "Mobail Fon Namba",
+    "email": "Imel (Sapos Yu Gat)",
+    "password": "Paswod",
+    "llg": "Lokal Level Gavman (LLG)",
+    "ward": "Wod Namba",
+    "village": "Viles / Komuniti",
+    "residentialLocation": "Ples Yu Stap Long En Nau",
+    "diasporaQuestion": "Yu stap long Bulolo o yu manmeri bilong Bulolo tasol yu stap narapela hap?",
+    "category": "Kain Hevi / Askim",
+    "subject": "Het-Tok Bilong Askim",
+    "description": "Tok Klia Olgeta Samting",
+    "submit": "Salim Askim Go Long Ofis",
+    "saveDraft": "Holim Pas Long Fon Pastaim",
+    "referenceCode": "Refrens Namba"
+  }
+}

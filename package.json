@@ -1,0 +1,27 @@
+{
+  "name": "bulolo-connect-root",
+  "version": "1.0.0",
+  "description": "BULOLO CONNECT: District Digital Services, Community Engagement & Development Management Platform",
+  "scripts": {
+    "dev": "concurrently -n \"API,WEB\" -c \"green,blue\" \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "setup:backend": "cd backend && npm install && npm run db:setup",
+    "setup:frontend": "cd frontend && npm install",
+    "test:backend": "cd backend && npx ts-node src/tests/api.test.ts",
+    "build:backend": "cd backend && npm run build",
+    "build:frontend": "cd frontend && npm run build"
+  },
+  "dependencies": {
+    "concurrently": "^9.1.2"
+  },
+  "keywords": [
+    "bulolo",
+    "morobe",
+    "papua-new-guinea",
+    "digital-district-services",
+    "e-governance",
+    "civic-tech"
+  ],
+  "author": "Bulolo District Administration & Parliamentary Electorate Office"
+}
